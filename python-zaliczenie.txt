@@ -1,0 +1,38 @@
+Gra "Labirynt"
+
+-> losowe generowanie labiryntu
+	algorytm losowania labiryntu
+-> rozmiar zależny od poziomu trudności
+-> sterowanie (strzałki)
+-> interakcje z przedmiotami i przeszkodami
+-> system pułapek i przeszkód
+	cofające do startu
+	ruchome przeszkody (np. przesuwające się ściany co kilka ruchów)
+	znikające podłogi (po wejściu na pole)
+-> system kluczy i drzwi
+	kolory kluczy i drzwi
+	ograniczona liczba kluczy
+-> poziomy trudności
+	łatwy (mały labirynt)
+	średni (większy labirynt, pułapki)
+	trudny (bardzo duży labirynt, pułapki, ograniczona widoczność, gra na czas)
+-> tryb na czas
+	odliczanie czasu od rozpoczęcia gry
+	rekordy
+-> plecak gracza
+	zbieranie przedmiotów
+	ograniczona liczba miejsc
+-> zapis i odczyt stanu gry
+-> wielokrotny labirynt (np. kampania złożona z trzech poziomów)
+-> system NPC
+	patroluje
+	ściga gracza po zauważeniu (lub inna akcja)
+->mapa i mgła
+	ograniczona widoczność (np. 5 pól od gracza)
+	odkrywanie mapy w miarę postępów
+-> punktacja
+	punkty za np. czas gry, liczba kluczy itp.
+->wielopoziomowy labirynt
+	płaszczyzna pozioma i pionowa
+-> mgła
+	odsłanianie części labiryntu zamiast całego

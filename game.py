@@ -240,5 +240,5 @@ class LabirynthGame:
 
 if __name__ == "__main__":
     root = tk.Tk()
-    game = LabirynthGame(root, width=20, height=20)
+    game = LabirynthGame(root, width=45, height=20)
     root.mainloop()

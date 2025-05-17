@@ -60,7 +60,7 @@ class LabirynthGame:
 
     def setup_scores(self): # aktualizacja punktów i czasu         
         self.game_time = int(time.time() - self.start_time)
-        self.points = max(0, 1000 - self.game_time *10)
+        self.points = max(0, 10000 - self.game_time *10)
         self.label_points.config(text=f"Punkty: {self.points}")
         self.label_time.config(text=f"Czas: {self.game_time}s")
 

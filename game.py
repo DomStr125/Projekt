@@ -19,6 +19,7 @@ class LabirynthGame:
         self.points = 0
         self.start_time = time.time()
         self.game_time = 0
+        self.is_game_active = True
 
         self.frame_points = tk.Frame(root, bg='#f0f0f0')
         self.frame_points.pack(side=tk.TOP, fill=tk.X)
@@ -71,12 +72,14 @@ class LabirynthGame:
         return textures
 
     def setup_scores(self): # aktualizacja punktów i czasu         
-        self.game_time = int(time.time() - self.start_time)
-        self.points = max(0, 10000 - self.game_time *10)
-        self.label_points.config(text=f"Punkty: {self.points}")
-        self.label_time.config(text=f"Czas: {self.game_time}s")
+            if self.is_game_active:
+                self.game_time = int(time.time() - self.start_time)
+                self.points = max(0, 10000 - self.game_time *10)
+                
+                self.label_points.config(text=f"Punkty: {self.points}")
+                self.label_time.config(text=f"Czas: {self.game_time}s")
 
-        self.root.after(1000, self.setup_scores)
+                self.root.after(1000, self.setup_scores)
     
     def generate_labirynth(self): # generowanie labiryntu możliwego do przejścia
         labirynth = [[1 for i in range(self.width)] for j in range(self.height)]
@@ -192,8 +195,9 @@ class LabirynthGame:
                 self.player_x, self.player_y = previous_x, previous_y
 
         if (self.player_x, self.player_y) == (self.exit_x, self.exit_y): # wyjście z labiryntu
+            self.is_game_active = False
             final_time = int(time.time() - self.start_time)
-            messagebox.showinfo("Congratulations!", f"You've reached the exit in s \n Your score: {self.points}")
+            messagebox.showinfo("Congratulations!", f"You've reached the exit in {final_time}s \n Your score: {self.points}")
             self.root.quit()
                    
     def create_key_door(self): # tworzenie klucza i drzwi

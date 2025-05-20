@@ -1,4 +1,3 @@
-import math
 import random
 import time
 import tkinter as tk
@@ -7,14 +6,55 @@ from collections import deque
 
 
 class LabirynthGame:
-    def __init__(self, root, width, height=100): #initializacja gry
-        self.root = root
-        self.root.title("Labirynth Game")
 
-        self.width = width
-        self.height = height
+    DIFFICULTY_SETTINGS = {
+        "easy": {
+            "width": 30,
+            "height": 15,
+            "doors": 1,
+            "max_keys": 1,
+            "hearts": 5,
+            "enemies": 0,
+            "vision_range": 5
+        },
+        "medium": {
+            "width": 40,
+            "height": 20,
+            "doors": 3,
+            "max_keys": 2,
+            "hearts": 5,
+            "enemies": 10,
+            "vision_range": 5
+        },
+        "hard": {
+            "width": 60,
+            "height": 30,
+            "doors": 5,
+            "max_keys": 3,
+            "hearts": 3,
+            "enemies": 20,
+            "vision_range": 3
+        }
+    }
+
+    def __init__(self, root, difficulty="easy"): #initializacja gry
+        self.root = root
+        self.root.title(f"Labirynth Game - {difficulty.capitalize()}")
+
+        self.width = self.DIFFICULTY_SETTINGS[difficulty]["width"]
+        self.height = self.DIFFICULTY_SETTINGS[difficulty]["height"]
         self.cell_size = 32
-        self.min_distance = (width + height) // 2
+        self.min_distance = (self.width + self.height) // 2
+        self.vision_range = self.DIFFICULTY_SETTINGS[difficulty]["vision_range"]
+        self.max_keys = self.DIFFICULTY_SETTINGS[difficulty]["max_keys"]
+        self.hearts = self.DIFFICULTY_SETTINGS[difficulty]["hearts"]
+        self.enemies = self.DIFFICULTY_SETTINGS[difficulty]["enemies"]
+
+        self.discovered = set()
+        self.inventory = {
+            "keys": [],
+            "special_items": []
+        }
 
         self.points = 0
         self.start_time = time.time()
@@ -54,6 +94,7 @@ class LabirynthGame:
         self.labirynth[self.exit_y][self.exit_x] = "E"
         self.create_key_door()
         self.labirynth[self.key_y][self.key_x] = "K"
+        self.update_discovered()
 
         self.canvas = tk.Canvas(root, width=self.width * self.cell_size, height=self.height * self.cell_size, bg="white")
         self.canvas.pack()      
@@ -190,7 +231,8 @@ class LabirynthGame:
                 self.door_active = False
                 self.labirynth[self.door_y][self.door_x] = 0
                 self.keys.remove("K")
-                self.points += 150
+                self.points += 200
+                self.label_points.config(text=f"Punkty: {self.points}")
                 print("You opened the door!")
             else:
                 print("You need a key to open this door!")
@@ -255,7 +297,27 @@ class LabirynthGame:
         
         return []
 
+    def start_game_with_difficulty(difficulty):
+        root.deiconify()
+        LabirynthGame(root, difficulty)
+    
+    @staticmethod
+    def choose_difficulty(root):
+        dialog = tk.Toplevel(root)
+        dialog.title("Choose Difficulty")
+
+        tk.Label(dialog, text="Choose difficulty level:", font=('Arial', 12)).pack(pady=10)
+
+        def start_and_close(difficulty):
+            dialog.destroy()
+            callback(difficulty)
+
+        tk.Button(dialog, text="Easy", command=lambda: start_and_close("easy")).pack(fill=tk.X, padx=20, pady=5)
+        tk.Button(dialog, text="Medium", command=lambda: start_and_close("medium")).pack(fill=tk.X, padx=20, pady=5)
+        tk.Button(dialog, text="Hard", command=lambda: start_and_close("hard")).pack(fill=tk.X, padx=20, pady=5)
+
 if __name__ == "__main__":
     root = tk.Tk()
-    game = LabirynthGame(root, width=30, height=15)
+    root.withdraw()
+    LabirynthGame.choose_difficulty(root, LabirynthGame.start_game_with_difficulty)
     root.mainloop()

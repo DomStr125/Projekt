@@ -302,7 +302,7 @@ class LabirynthGame:
         LabirynthGame(root, difficulty)
     
     @staticmethod
-    def choose_difficulty(root):
+    def choose_difficulty(root, callback):
         dialog = tk.Toplevel(root)
         dialog.title("Choose Difficulty")
 

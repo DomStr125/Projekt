@@ -4,7 +4,6 @@ import tkinter as tk
 from tkinter import messagebox
 from collections import deque
 
-
 class LabirynthGame:
 
     DIFFICULTY_SETTINGS = {
@@ -114,6 +113,7 @@ class LabirynthGame:
             "door": tk.PhotoImage(file="grafika/silver_door.png"),
             "fog": tk.PhotoImage(file="grafika/fog.png"),
             "torch": tk.PhotoImage(file="grafika/torch.png")
+            # "background": tk.PhotoImage(file="grafika/background.png")  # <-- REMOVE THIS LINE
         }
         return textures
 
@@ -267,18 +267,48 @@ class LabirynthGame:
     def create_key_door(self): # tworzenie klucza i drzwi
         reachable_paths = self.find_reachable_paths(self.player_x, self.player_y)
 
-        self.key_x, self.key_y = random.choice([(x, y) for x, y in reachable_paths if (x, y) != (self.player_x, self.player_y) and (x, y) != (self.exit_x, self.exit_y)])
+        # tworzenie klucza
+        self.key_x, self.key_y = random.choice([
+            (x, y) for x, y in reachable_paths
+            if (x, y) != (self.player_x, self.player_y) and (x, y) != (self.exit_x, self.exit_y)
+        ])
         self.labirynth[self.key_y][self.key_x] = "K"
 
-        exit_path = self.find_path(self.key_x, self.key_y, self.exit_x, self.exit_y)
-        if len(exit_path) > 20:
-            self.door_x, self.door_y = exit_path[20]
+        # ścieżka od gracza do klucza i od klucza do wyjścia
+        path_to_key = self.find_path(self.player_x, self.player_y, self.key_x, self.key_y)
+        path_key_to_exit = self.find_path(self.key_x, self.key_y, self.exit_x, self.exit_y)
+
+        # Umieść drzwi tylko na ścieżce od klucza do wyjścia, nie blokując ścieżki od gracza do klucza
+        if len(path_key_to_exit) > 2:
+            # Unikaj umieszczania drzwi na kluczu lub wyjściu
+            possible_door_positions = [
+                pos for pos in path_key_to_exit[1:-1]
+                if pos not in path_to_key
+            ]
+            if possible_door_positions:
+                self.door_x, self.door_y = random.choice(possible_door_positions)
+            else:
+                # fallback: stwórz drzwi w losowej dostępnej lokalizacji
+                self.door_x, self.door_y = random.choice([
+                    (x, y) for (x, y) in reachable_paths
+                    if (x, y) != (self.player_x, self.player_y)
+                    and (x, y) != (self.exit_x, self.exit_y)
+                    and (x, y) != (self.key_x, self.key_y)
+                    and (x, y) not in path_to_key
+                ])
             self.labirynth[self.door_y][self.door_x] = "D"
         else:
-            self.door_x, self.door_y = random.choice([(x, y) for (x, y) in reachable_paths if (x, y) != (self.player_x, self.player_y) and (x, y) != (self.exit_x, self.exit_y)])
+            # fallback: stwórz drzwi w losowej dostępnej lokalizacji
+            self.door_x, self.door_y = random.choice([
+                (x, y) for (x, y) in reachable_paths
+                if (x, y) != (self.player_x, self.player_y)
+                and (x, y) != (self.exit_x, self.exit_y)
+                and (x, y) != (self.key_x, self.key_y)
+                and (x, y) not in path_to_key
+            ])
             self.labirynth[self.door_y][self.door_x] = "D"
     
-    def place_torch(self):
+    def place_torch(self): # umieszczanie położenia pochodni
         possible = [
             (x, y)
             for y in range(self.height)
@@ -291,6 +321,7 @@ class LabirynthGame:
         ]
         if possible:
             self.torch_x, self.torch_y = random.choice(possible)
+            self.labirynth[self.torch_y][self.torch_x] = "T"
         else:
             self.torch_x, self.torch_y = -1, -1
 

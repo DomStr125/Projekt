@@ -13,7 +13,7 @@ class LabirynthGame:
 
         self.width = width
         self.height = height
-        self.cell_size = 20
+        self.cell_size = 32
         self.min_distance = (width + height) // 2
 
         self.points = 0
@@ -31,6 +31,7 @@ class LabirynthGame:
 
         self.setup_scores()
 
+        self.textures = self.load_textures()
         self.colors = {
             "wall": "black",
             "path": "white",
@@ -57,6 +58,17 @@ class LabirynthGame:
         self.canvas.pack()      
         self.root.bind("<KeyPress>", self.on_key_press)
         self.draw_labirynth()
+
+    def load_textures(self): # ładowanie tekstur
+        textures = {
+            "wall": tk.PhotoImage(file="grafika/wall.png"),
+            "path": tk.PhotoImage(file="grafika/path.png"),
+            "player": tk.PhotoImage(file="grafika/knight.png"),
+            "exit": tk.PhotoImage(file="grafika/exit.png"),
+            "key": tk.PhotoImage(file="grafika/silver_key.png"),
+            "door": tk.PhotoImage(file="grafika/silver_door.png")
+        }
+        return textures
 
     def setup_scores(self): # aktualizacja punktów i czasu         
         self.game_time = int(time.time() - self.start_time)
@@ -130,22 +142,21 @@ class LabirynthGame:
         for y in range(self.height):
             for x in range(self.width):
                 if self.labirynth[y][x] == 1:
-                    color = "black"
-                elif (x, y) == (self.exit_x, self.exit_y):
-                    color = "green"
-                elif (x, y) == (self.player_x, self.player_y):
-                    color = "blue"
-                elif (x, y) == (self.key_x, self.key_y) and self.labirynth[y][x] == "K":
-                    color = "gold"
-                elif (x, y) == (self.door_x, self.door_y) and self.door_active:
-                    color = "red"
+                    self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["wall"])
                 else:
-                    color = "white"
+                    self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["path"])
+        
+        for y in range(self.height):
+            for x in range(self.width):
+                if (x, y) == (self.exit_x, self.exit_y):
+                    self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["exit"])
+                elif (x, y) == (self.player_x, self.player_y):
+                    self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["player"])
+                elif (x, y) == (self.key_x, self.key_y) and self.labirynth[y][x] == "K":
+                    self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["key"])
+                elif (x, y) == (self.door_x, self.door_y) and self.door_active:
+                    self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["door"])
 
-                self.canvas.create_rectangle(x * self.cell_size, y * self.cell_size,
-                                             (x + 1) * self.cell_size, (y + 1) * self.cell_size,
-                                             fill=color, outline="gray")
-    
     def on_key_press(self, event): # obsługa klawiszy
         new_x, new_y = self.player_x, self.player_y
         previous_x, previous_y = self.player_x, self.player_y

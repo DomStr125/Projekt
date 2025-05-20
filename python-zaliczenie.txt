@@ -3,7 +3,7 @@ Gra "Labirynt"
 -> losowe generowanie labiryntu
 	algorytm losowania labiryntu
 -> rozmiar zależny od poziomu trudności
--> sterowanie (strzałki)
+-> sterowanie (w/s/a/d)
 -> interakcje z przedmiotami i przeszkodami
 -> system pułapek i przeszkód
 	cofające do startu
@@ -36,3 +36,29 @@ Gra "Labirynt"
 	płaszczyzna pozioma i pionowa
 -> mgła
 	odsłanianie części labiryntu zamiast całego
+
+
+-> planowane zmiany(najbliższe):
+
+	-> rozmiary labiryntu:
+		easy: size 15x30, doors 1, vision 5
+		medium: size 20x40, doors 3+1*, vision 5
+		hard: size 30x60, doors 5+1*, vision 3
+
+		easy: drzwi koło mety
+		medium: 3 drzwi w labiryncie + 1 przy mecie + pochodnia(+2 vision)
+		hard: 5 drzwi w labiryncie + 1 przy mecie + pochodnia(+2 vision)
+
+	-> mechaniki:
+		fog of war + pochodnia
+		wiele drzwi i kluczy
+		ekwipunek (dla medium i hard) - miejsce na 1(medium) klucz / 2(hard) klucze + przedmiot specjalny (np. pochodnia)
+		maczeta (przedmiot specjalny) - zniszczenie wybranej ściany sąsiadującej (maks 3 użycia, potem zostaje zniszcona)
+		przeciwnicy (dla medium i hard) - co kilka sekund na danym polu pojawia się przeciwnik na np. 2 sekundy, po wejściu na przeciwnika traci się jedno serce
+		życia (dla medium i hard) - 5(medium) / 3(hard) serc, po straceniu wszystkich żyć gracz wraca na start
+		mapa - pokazuje odkryte pola
+		przeciwnicy NPC
+	
+	-> animacje
+
+	-> dodatkowe rodzaje map(inne mapy = inne przeszkody)

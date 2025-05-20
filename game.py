@@ -26,8 +26,8 @@ class LabirynthGame:
             "vision_range": 2
         },
         "hard": {
-            "width": 60,
-            "height": 30,
+            "width": 50,
+            "height": 25,
             "doors": 5,
             "max_keys": 3,
             "hearts": 3,

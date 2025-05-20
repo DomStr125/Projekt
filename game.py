@@ -40,6 +40,7 @@ class LabirynthGame:
     def __init__(self, root, difficulty="easy"): #initializacja gry
         self.root = root
         self.root.title(f"Labirynth Game - {difficulty.capitalize()}")
+        self.root.state("zoomed")
 
         self.width = self.DIFFICULTY_SETTINGS[difficulty]["width"]
         self.height = self.DIFFICULTY_SETTINGS[difficulty]["height"]
@@ -60,6 +61,13 @@ class LabirynthGame:
         self.game_time = 0
         self.is_game_active = True
 
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        max_cell_width = screen_width // self.width
+        max_cell_height = (screen_height - 50) // self.height
+        self.cell_size = min(self.cell_size, max_cell_width, max_cell_height)
+
+
         self.frame_points = tk.Frame(root, bg='#f0f0f0')
         self.frame_points.pack(side=tk.TOP, fill=tk.X)
 
@@ -77,6 +85,7 @@ class LabirynthGame:
         self.key_x, self.key_y = -1, -1
         self.door_x, self.door_y = -1, -1
         self.door_active = True
+        self.torch_x, self.torch_y = -1, -1
 
         self.labirynth = self.generate_labirynth()
         self.player_x, self.player_y = 1, 1
@@ -85,9 +94,13 @@ class LabirynthGame:
         self.labirynth[self.exit_y][self.exit_x] = "E"
         self.create_key_door()
         self.labirynth[self.key_y][self.key_x] = "K"
+        self.labirynth[self.door_y][self.door_x] = "D"
+        self.labirynth[self.torch_x][self.torch_y] = "T"
+
+        self.place_torch()
 
         self.canvas = tk.Canvas(root, width=self.width * self.cell_size, height=self.height * self.cell_size, bg="white")
-        self.canvas.pack()      
+        self.canvas.pack(expand=True, fill=tk.BOTH)      
         self.root.bind("<KeyPress>", self.on_key_press)
         self.draw_labirynth()
 
@@ -99,7 +112,8 @@ class LabirynthGame:
             "exit": tk.PhotoImage(file="grafika/exit.png"),
             "key": tk.PhotoImage(file="grafika/silver_key.png"),
             "door": tk.PhotoImage(file="grafika/silver_door.png"),
-            "fog": tk.PhotoImage(file="grafika/fog.png")
+            "fog": tk.PhotoImage(file="grafika/fog.png"),
+            "torch": tk.PhotoImage(file="grafika/torch.png")
         }
         return textures
 
@@ -192,6 +206,8 @@ class LabirynthGame:
                         self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["key"])
                     elif (x, y) == (self.door_x, self.door_y) and self.door_active:
                         self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["door"])
+                    elif (x, y) == (self.torch_x, self.torch_y):
+                        self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["torch"])
                 else:
                     self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["fog"])
 
@@ -231,6 +247,16 @@ class LabirynthGame:
             else:
                 print("You need a key to open this door!")
                 self.player_x, self.player_y = previous_x, previous_y
+        
+        if (self.player_x, self.player_y) == (self.torch_x, self.torch_y):
+            self.labirynth[self.torch_y][self.torch_x] = 0
+            self.torch_x, self.torch_y = -1, -1
+            self.vision_range += 2
+            self.points += 100
+            self.label_points.config(text=f"Punkty: {self.points}")
+            print("You found a torch! Vision increased.")
+            self.inventory["special_items"].append("torch")
+            self.draw_labirynth()
 
         if (self.player_x, self.player_y) == (self.exit_x, self.exit_y): # wyjście z labiryntu
             self.is_game_active = False
@@ -252,6 +278,22 @@ class LabirynthGame:
             self.door_x, self.door_y = random.choice([(x, y) for (x, y) in reachable_paths if (x, y) != (self.player_x, self.player_y) and (x, y) != (self.exit_x, self.exit_y)])
             self.labirynth[self.door_y][self.door_x] = "D"
     
+    def place_torch(self):
+        possible = [
+            (x, y)
+            for y in range(self.height)
+            for x in range(self.width)
+            if self.labirynth[y][x] == 0 and
+               (x, y) != (self.player_x, self.player_y) and
+               (x, y) != (self.exit_x, self.exit_y) and
+               (x, y) != (self.key_x, self.key_y) and
+               (x, y) != (self.door_x, self.door_y)
+        ]
+        if possible:
+            self.torch_x, self.torch_y = random.choice(possible)
+        else:
+            self.torch_x, self.torch_y = -1, -1
+
     def find_reachable_paths(self, start_x, start_y): # znajdowanie dostępnych ścieżek
         visited = set()
         queue = deque([(start_x, start_y)])
@@ -270,7 +312,7 @@ class LabirynthGame:
                     if 0 <= nx < self.width and 0 <= ny < self.height:
                         queue.append((nx, ny))
         return reachable
-
+    
     def find_path(self, start_x, start_y, target_x, target_y): # znajdowanie ścieżki w labiryncie
         queue = deque([(start_x, start_y, [])])
         visited = set()
@@ -292,12 +334,12 @@ class LabirynthGame:
         return []
 
     @staticmethod
-    def start_game_with_difficulty(root, difficulty):
+    def start_game_with_difficulty(root, difficulty): # uruchomienie gry z wybranym poziomem trudności
         root.deiconify()
         LabirynthGame(root, difficulty)
     
     @staticmethod
-    def choose_difficulty(root, callback):
+    def choose_difficulty(root, callback): # wybór poziomu trudności
         dialog = tk.Toplevel(root)
         dialog.title("Choose Difficulty")
 

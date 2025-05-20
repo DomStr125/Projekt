@@ -94,7 +94,7 @@ class LabirynthGame:
         self.labirynth[self.exit_y][self.exit_x] = "E"
         self.create_key_door()
         self.labirynth[self.key_y][self.key_x] = "K"
-        self.update_discovered()
+        """self.update_discovered()"""
 
         self.canvas = tk.Canvas(root, width=self.width * self.cell_size, height=self.height * self.cell_size, bg="white")
         self.canvas.pack()      
@@ -297,7 +297,8 @@ class LabirynthGame:
         
         return []
 
-    def start_game_with_difficulty(difficulty):
+    @staticmethod
+    def start_game_with_difficulty(root, difficulty):
         root.deiconify()
         LabirynthGame(root, difficulty)
     
@@ -310,7 +311,7 @@ class LabirynthGame:
 
         def start_and_close(difficulty):
             dialog.destroy()
-            callback(difficulty)
+            callback(root, difficulty)
 
         tk.Button(dialog, text="Easy", command=lambda: start_and_close("easy")).pack(fill=tk.X, padx=20, pady=5)
         tk.Button(dialog, text="Medium", command=lambda: start_and_close("medium")).pack(fill=tk.X, padx=20, pady=5)

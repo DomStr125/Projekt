@@ -15,7 +15,7 @@ class LabirynthGame:
             "max_keys": 1,
             "hearts": 5,
             "enemies": 0,
-            "vision_range": 5
+            "vision_range": 2
         },
         "medium": {
             "width": 40,
@@ -24,7 +24,7 @@ class LabirynthGame:
             "max_keys": 2,
             "hearts": 5,
             "enemies": 10,
-            "vision_range": 5
+            "vision_range": 2
         },
         "hard": {
             "width": 60,
@@ -33,7 +33,7 @@ class LabirynthGame:
             "max_keys": 3,
             "hearts": 3,
             "enemies": 20,
-            "vision_range": 3
+            "vision_range": 2
         }
     }
 
@@ -50,7 +50,6 @@ class LabirynthGame:
         self.hearts = self.DIFFICULTY_SETTINGS[difficulty]["hearts"]
         self.enemies = self.DIFFICULTY_SETTINGS[difficulty]["enemies"]
 
-        self.discovered = set()
         self.inventory = {
             "keys": [],
             "special_items": []
@@ -73,14 +72,6 @@ class LabirynthGame:
         self.setup_scores()
 
         self.textures = self.load_textures()
-        self.colors = {
-            "wall": "black",
-            "path": "white",
-            "player": "blue",
-            "exit": "green",
-            "key": "gold",
-            "door": "red"
-        }
 
         self.keys = []
         self.key_x, self.key_y = -1, -1
@@ -94,7 +85,6 @@ class LabirynthGame:
         self.labirynth[self.exit_y][self.exit_x] = "E"
         self.create_key_door()
         self.labirynth[self.key_y][self.key_x] = "K"
-        """self.update_discovered()"""
 
         self.canvas = tk.Canvas(root, width=self.width * self.cell_size, height=self.height * self.cell_size, bg="white")
         self.canvas.pack()      
@@ -108,7 +98,8 @@ class LabirynthGame:
             "player": tk.PhotoImage(file="grafika/knight.png"),
             "exit": tk.PhotoImage(file="grafika/exit.png"),
             "key": tk.PhotoImage(file="grafika/silver_key.png"),
-            "door": tk.PhotoImage(file="grafika/silver_door.png")
+            "door": tk.PhotoImage(file="grafika/silver_door.png"),
+            "fog": tk.PhotoImage(file="grafika/fog.png")
         }
         return textures
 
@@ -192,14 +183,17 @@ class LabirynthGame:
         
         for y in range(self.height):
             for x in range(self.width):
-                if (x, y) == (self.exit_x, self.exit_y):
-                    self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["exit"])
-                elif (x, y) == (self.player_x, self.player_y):
-                    self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["player"])
-                elif (x, y) == (self.key_x, self.key_y) and self.labirynth[y][x] == "K":
-                    self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["key"])
-                elif (x, y) == (self.door_x, self.door_y) and self.door_active:
-                    self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["door"])
+                if ((x - self.player_x) ** 2 + (y - self.player_y) ** 2) <= self.vision_range ** 2:
+                    if (x, y) == (self.exit_x, self.exit_y):
+                        self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["exit"])
+                    elif (x, y) == (self.player_x, self.player_y):
+                        self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["player"])
+                    elif (x, y) == (self.key_x, self.key_y) and self.labirynth[y][x] == "K":
+                        self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["key"])
+                    elif (x, y) == (self.door_x, self.door_y) and self.door_active:
+                        self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["door"])
+                else:
+                    self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["fog"])
 
     def on_key_press(self, event): # obsługa klawiszy
         new_x, new_y = self.player_x, self.player_y

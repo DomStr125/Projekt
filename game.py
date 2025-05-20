@@ -7,7 +7,7 @@ from collections import deque
 
 
 class LabirynthGame:
-    def __init__(self, root, width=100, height=100): #initializacja gry
+    def __init__(self, root, width, height=100): #initializacja gry
         self.root = root
         self.root.title("Labirynth Game")
 
@@ -257,5 +257,5 @@ class LabirynthGame:
 
 if __name__ == "__main__":
     root = tk.Tk()
-    game = LabirynthGame(root, width=45, height=20)
+    game = LabirynthGame(root, width=30, height=15)
     root.mainloop()

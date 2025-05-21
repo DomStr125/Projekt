@@ -106,15 +106,14 @@ class LabirynthGame:
 
     def load_textures(self): # ładowanie tekstur
         textures = {
-            "wall": tk.PhotoImage(file="grafika/wall.png"),
-            "path": tk.PhotoImage(file="grafika/path.png"),
+            "wall": tk.PhotoImage(file="grafika/forest/wall.png"),
+            "path": tk.PhotoImage(file="grafika/forest/path.png"),
             "player": tk.PhotoImage(file="grafika/knight.png"),
             "exit": tk.PhotoImage(file="grafika/exit.png"),
             "key": tk.PhotoImage(file="grafika/silver_key.png"),
             "door": tk.PhotoImage(file="grafika/silver_door.png"),
-            "fog": tk.PhotoImage(file="grafika/fog.png"),
-            "torch": tk.PhotoImage(file="grafika/torch.png")
-            # "background": tk.PhotoImage(file="grafika/background.png")  # <-- REMOVE THIS LINE
+            "fog": tk.PhotoImage(file="grafika/forest/fog.png"),
+            "torch": tk.PhotoImage(file="grafika/forest/torch.png")
         }
         return textures
 

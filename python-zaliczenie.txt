@@ -88,4 +88,3 @@ KAMPANIA:
 		drwzi i klucze EASY
 		przyciski EASY
 		tajne przejścia w dwie/jedną strone HARD
-

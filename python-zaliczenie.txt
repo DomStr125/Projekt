@@ -66,25 +66,25 @@ Gra "Labirynt"
 -> plan gry
 
 KAMPANIA:
-	las labirynt:
-		mgła
-		klucze + drzwi
-		pochodnia
-		przeciwnicy(co kilka tur wyskakuje na jednym miejscu)
-	pustynia labirynt:
-		burza piaskowa (zmiania wyglądu labiryntu) EASY
-		ruchome piaski MEDIUM
-		sępy (przciwnicy AI z określoną szybkością i polem widzenia) MEDIUM
-		system dnia i nocy (w nocy ograniczona widoczność gracza i wrogów) MEDIUM
-			HARD -> większa liczba przeciwników / zwiekszenie ich statystyk
-	góry:
-		wielopoziomowość (wzgórza) EASY
-		lawiny (co kilka tur na losowo wybrane (1 raz) pola spada lawina) MEDIUM
-		erupcje wulkanu (co kilka tur na losowe pola spada meteor (2x2)) HARD
-		zapadające skały(po zejściu z pola pole sie zapada) HARD
-	wieża:
-		zapadająca się podłoga EASY
-		wrogowie (przeciwnicy AI) MEDIUM
-		drwzi i klucze EASY
-		przyciski EASY
-		tajne przejścia w dwie/jedną strone HARD
+	-> las labirynt:
+		-> mgła
+		-> klucze + drzwi
+		-> pochodnia
+		-> przeciwnicy(co kilka tur wyskakuje na jednym miejscu)
+	-> pustynia labirynt:
+		-> burza piaskowa (zmiania wyglądu labiryntu) EASY
+		-> ruchome piaski MEDIUM
+		-> sępy (przciwnicy AI z określoną szybkością i polem widzenia) MEDIUM
+		-> system dnia i nocy (w nocy ograniczona widoczność gracza i wrogów) MEDIUM
+			-> HARD - większa liczba przeciwników / zwiekszenie ich statystyk
+	-> góry:
+		-> wielopoziomowość (wzgórza) EASY
+		-> lawiny (co kilka tur na losowo wybrane (1 raz) pola spada lawina) MEDIUM
+		-> erupcje wulkanu (co kilka tur na losowe pola spada meteor (2x2)) HARD
+		-> zapadające skały(po zejściu z pola pole sie zapada) HARD
+	-> wieża:
+		-> zapadająca się podłoga EASY
+		-> wrogowie (przeciwnicy AI) MEDIUM
+		-> drwzi i klucze EASY
+		-> przyciski EASY
+		-> tajne przejścia w dwie/jedną strone HARD

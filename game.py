@@ -11,7 +11,7 @@ class LabirynthGame:
             "width": 30,
             "height": 15,
             "doors": 0,
-            "max_keys": 0,
+            "max_keys": 1,
             "hearts": 5,
             "enemies": 0,
             "vision_range": 2
@@ -105,6 +105,8 @@ class LabirynthGame:
         self.create_doors_and_keys(self.DIFFICULTY_SETTINGS[difficulty]["doors"])
 
         self.place_torch()
+
+        self.discovered = [[False for _ in range(self.width)] for _ in range(self.height)]
 
         self.canvas = tk.Canvas(root, width=self.width * self.cell_size, height=self.height * self.cell_size, bg="white")
         self.canvas.pack(expand=True, fill=tk.BOTH)      
@@ -215,6 +217,7 @@ class LabirynthGame:
         for y in range(self.height):
             for x in range(self.width):
                 if ((x - self.player_x) ** 2 + (y - self.player_y) ** 2) <= self.vision_range ** 2:
+                    self.discovered[y][x] = True
                     cell = self.labirynth[y][x]
                     if (x, y) == (self.exit_x, self.exit_y):
                         self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["exit"])
@@ -252,6 +255,24 @@ class LabirynthGame:
                     self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["fog"])
 
     def on_key_press(self, event): # obsługa klawiszy
+        # Show inventory on 'e' key
+        if event.keysym.lower() == "e":
+            keys_display = ", ".join(self.keys) if self.keys else "None"
+            specials_display = ", ".join(self.inventory["special_items"]) if self.inventory["special_items"] else "None"
+            gate_key_display = "Yes" if self.inventory.get("Gate Key", 0) else "No"
+            message = (
+                f"Inventory:\n"
+                f"Keys: {keys_display}\n"
+                f"Special items: {specials_display}\n"
+                f"Gate Key: {gate_key_display}"
+            )
+            messagebox.showinfo("Inventory", message)
+            return
+
+        if event.keysym == "space":
+            self.show_minimap()
+            return
+
         new_x, new_y = self.player_x, self.player_y
         previous_x, previous_y = self.player_x, self.player_y
 
@@ -510,6 +531,36 @@ class LabirynthGame:
             self.labirynth[self.gate_key_y][self.gate_key_x] = "GK"
         else:
             self.gate_key_x, self.gate_key_y = -1, -1
+
+    def show_minimap(self): # wyświetlanie minimapy
+        minimap = tk.Toplevel(self.root)
+        minimap.title("Minimap")
+        cell_size = 8  # Small cells for minimap
+        canvas = tk.Canvas(minimap, width=self.width*cell_size, height=self.height*cell_size, bg="white")
+        canvas.pack()
+
+        for y in range(self.height):
+            for x in range(self.width):
+                if not self.discovered[y][x]:
+                    color = "blue"  # Unknown
+                elif (x, y) == (self.exit_x, self.exit_y):
+                    color = "green"  # Exit
+                elif isinstance(self.labirynth[y][x], str) and self.labirynth[y][x].startswith("K"):
+                    color = "yellow"  # Key
+                elif self.labirynth[y][x] == 1:
+                    color = "black"  # Wall
+                else:
+                    color = "white"  # Path
+                canvas.create_rectangle(
+                    x*cell_size, y*cell_size, (x+1)*cell_size, (y+1)*cell_size,
+                    fill=color, outline=""
+                )
+        # Mark player position
+        canvas.create_rectangle(
+            self.player_x*cell_size, self.player_y*cell_size,
+            (self.player_x+1)*cell_size, (self.player_y+1)*cell_size,
+            fill="red", outline=""
+        )
 
     @staticmethod
     def start_game_with_difficulty(root, difficulty): # uruchomienie gry z wybranym poziomem trudności

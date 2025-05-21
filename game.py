@@ -3,6 +3,7 @@ import time
 import tkinter as tk
 from tkinter import messagebox
 from collections import deque
+import pickle
 
 class LabirynthGame:
 
@@ -49,6 +50,7 @@ class LabirynthGame:
         self.max_keys = self.DIFFICULTY_SETTINGS[difficulty]["max_keys"]
         self.hearts = self.DIFFICULTY_SETTINGS[difficulty]["hearts"]
         self.enemies_number = self.DIFFICULTY_SETTINGS[difficulty]["enemies"]
+        self.difficulty = difficulty
 
         self.inventory = {
             "keys": [],
@@ -291,6 +293,21 @@ class LabirynthGame:
             self.show_minimap()
             return
 
+        if event.keysym.lower() == "f5":
+            self.save_game()
+            return
+
+        if event.keysym.lower() == "f9":
+            self.load_game()
+            return
+
+        if event.keysym.lower() == "p":
+            self.save_game()
+            return
+        if event.keysym.lower() == "l":
+            self.load_game()
+            return
+
         new_x, new_y = self.player_x, self.player_y
         previous_x, previous_y = self.player_x, self.player_y
 
@@ -338,8 +355,8 @@ class LabirynthGame:
         # Monster visibility logic
         if not hasattr(self, "monsters_are_visible"):
             self.monsters_are_visible = False
-            self.monster_hidden_turns = 3
-            self.monster_visible_turns = 2
+            self.monster_hidden_turns = random.randint(3, 5)
+            self.monster_visible_turns = random.randint(1, 2)
 
         if self.monsters_are_visible:
             self.monster_visible_turns -= 1
@@ -349,7 +366,7 @@ class LabirynthGame:
                     self.labirynth[y][x] = "GRASS"
                 self.grass_monsters.clear()
                 self.monsters_are_visible = False
-                self.monster_hidden_turns = 3
+                self.monster_hidden_turns = random.randint(3, 5)
         else:
             self.monster_hidden_turns -= 1
             if self.monster_hidden_turns <= 0:
@@ -358,7 +375,7 @@ class LabirynthGame:
                 for (x, y) in self.enemies:
                     self.labirynth[y][x] = "GRASS_MONSTER"
                 self.monsters_are_visible = True
-                self.monster_visible_turns = 2
+                self.monster_visible_turns = random.randint(1, 2)
 
         self.draw_labirynth()
 
@@ -650,6 +667,79 @@ class LabirynthGame:
                     possible.pop(idx)
                     break
 
+    def save_game(self, filename="savegame.pkl"):
+        state = {
+            "labirynth": self.labirynth,
+            "player_x": self.player_x,
+            "player_y": self.player_y,
+            "previous_x": self.previous_x,
+            "previous_y": self.previous_y,
+            "exit_x": self.exit_x,
+            "exit_y": self.exit_y,
+            "doors": self.doors,
+            "keys_pos": self.keys_pos,
+            "keys": self.keys,
+            "points": self.points,
+            "hearts": self.hearts,
+            "inventory": self.inventory,
+            "torch_x": self.torch_x,
+            "torch_y": self.torch_y,
+            "gate_x": getattr(self, "gate_x", -1),
+            "gate_y": getattr(self, "gate_y", -1),
+            "gate_key_x": getattr(self, "gate_key_x", -1),
+            "gate_key_y": getattr(self, "gate_key_y", -1),
+            "discovered": self.discovered,
+            "enemies": self.enemies,
+            "grass_monsters": list(self.grass_monsters),
+            "player_moves": self.player_moves,
+            "monster_turns_left": self.monster_turns_left,
+            "monster_hidden_turns": self.monster_hidden_turns,
+            "monster_visible_turns": self.monster_visible_turns,
+            "monsters_are_visible": self.monsters_are_visible,
+            "game_time": self.game_time,
+            "start_time": self.start_time,
+            "difficulty": self.difficulty,
+        }
+        with open(filename, "wb") as f:
+            pickle.dump(state, f)
+        messagebox.showinfo("Game Saved", "Your game has been saved!")
+
+    def load_game(self, filename="savegame.pkl"):
+        with open(filename, "rb") as f:
+            state = pickle.load(f)
+        self.labirynth = state["labirynth"]
+        self.player_x = state["player_x"]
+        self.player_y = state["player_y"]
+        self.previous_x = state["previous_x"]
+        self.previous_y = state["previous_y"]
+        self.exit_x = state["exit_x"]
+        self.exit_y = state["exit_y"]
+        self.doors = state["doors"]
+        self.keys_pos = state["keys_pos"]
+        self.keys = state["keys"]
+        self.points = state["points"]
+        self.hearts = state["hearts"]
+        self.inventory = state["inventory"]
+        self.torch_x = state["torch_x"]
+        self.torch_y = state["torch_y"]
+        self.gate_x = state.get("gate_x", -1)
+        self.gate_y = state.get("gate_y", -1)
+        self.gate_key_x = state.get("gate_key_x", -1)
+        self.gate_key_y = state.get("gate_key_y", -1)
+        self.discovered = state["discovered"]
+        self.enemies = state["enemies"]
+        self.grass_monsters = set(state["grass_monsters"])
+        self.player_moves = state["player_moves"]
+        self.monster_turns_left = state["monster_turns_left"]
+        self.monster_hidden_turns = state["monster_hidden_turns"]
+        self.monster_visible_turns = state["monster_visible_turns"]
+        self.monsters_are_visible = state["monsters_are_visible"]
+        self.game_time = state["game_time"]
+        self.start_time = state["start_time"]
+        self.difficulty = state["difficulty"]
+        self.draw_labirynth()
+        messagebox.showinfo("Game Loaded", "Your game has been loaded!")
+
     @staticmethod
     def start_game_with_difficulty(root, difficulty): # uruchomienie gry z wybranym poziomem trudności
         root.deiconify()
@@ -666,9 +756,15 @@ class LabirynthGame:
             dialog.destroy()
             callback(root, difficulty)
 
+        def load_and_start():
+            root.deiconify()
+            game = LabirynthGame(root, "easy")  # Difficulty will be overwritten by save
+            game.load_game()
+
         tk.Button(dialog, text="Easy", command=lambda: start_and_close("easy")).pack(fill=tk.X, padx=20, pady=5)
         tk.Button(dialog, text="Medium", command=lambda: start_and_close("medium")).pack(fill=tk.X, padx=20, pady=5)
         tk.Button(dialog, text="Hard", command=lambda: start_and_close("hard")).pack(fill=tk.X, padx=20, pady=5)
+        tk.Button(dialog, text="Load Game", command=load_and_start).pack(fill=tk.X, padx=20, pady=5)
 
 if __name__ == "__main__":
     root = tk.Tk()

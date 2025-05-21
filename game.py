@@ -110,8 +110,8 @@ class LabirynthGame:
             "path": tk.PhotoImage(file="grafika/forest/path.png"),
             "player": tk.PhotoImage(file="grafika/knight.png"),
             "exit": tk.PhotoImage(file="grafika/exit.png"),
-            "key": tk.PhotoImage(file="grafika/silver_key.png"),
-            "door": tk.PhotoImage(file="grafika/silver_door.png"),
+            "key": tk.PhotoImage(file="grafika/silver_key1.png"),
+            "door": tk.PhotoImage(file="grafika/silver_door1.png"),
             "fog": tk.PhotoImage(file="grafika/forest/fog.png"),
             "torch": tk.PhotoImage(file="grafika/forest/torch.png")
         }

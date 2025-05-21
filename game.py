@@ -13,7 +13,7 @@ class LabirynthGame:
             "doors": 0,
             "max_keys": 1,
             "hearts": 5,
-            "enemies": 0,
+            "enemies": 5,
             "vision_range": 2
         },
         "medium": {
@@ -77,6 +77,9 @@ class LabirynthGame:
         self.label_time = tk.Label(self.frame_points, text="Time: 0s", font=('Arial', 10, 'bold'), fg="white", bg="#34495e")
         self.label_time.pack(side=tk.LEFT)
 
+        self.label_hearts = tk.Label(self.frame_points, text=f"Hearts: {self.hearts}", font=('Arial', 10, 'bold'), fg="white", bg="#34495e")
+        self.label_hearts.pack(side=tk.LEFT, padx=10)
+
         self.setup_scores()
 
         self.textures = self.load_textures()
@@ -113,6 +116,15 @@ class LabirynthGame:
         self.root.bind("<KeyPress>", self.on_key_press)
         self.draw_labirynth()
 
+        self.enemies = []
+        self.grass_monsters = set()
+        self.player_moves = 0
+        self.monster_turns_left = 0
+        self.monster_hidden_turns = random.randint(2, 5)
+        self.monster_visible_turns = random.randint(2, 5)
+        self.monsters_are_visible = False
+        self.place_enemies()
+
     def load_textures(self): # ładowanie tekstur
         textures = {
             "wall": tk.PhotoImage(file="grafika/forest/wall.png"),
@@ -133,6 +145,8 @@ class LabirynthGame:
             "emerald_door": tk.PhotoImage(file="grafika/emerald_door.png"),
             "sapphire_key": tk.PhotoImage(file="grafika/sapphire_key.png"),
             "sapphire_door": tk.PhotoImage(file="grafika/sapphire_door.png"),
+            "grass": tk.PhotoImage(file="grafika/forest/grass.png"),
+            "grass_monster": tk.PhotoImage(file="grafika/forest/grass_monster.png"),
         }
         return textures
 
@@ -251,6 +265,10 @@ class LabirynthGame:
                         self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["gate"])
                     elif (x, y) == (self.gate_key_x, self.gate_key_y) and self.labirynth[y][x] == "GK":
                         self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["gate_key"])
+                    elif cell == "GRASS":
+                        self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["grass"])
+                    elif cell == "GRASS_MONSTER":
+                        self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["grass_monster"])
                 else:
                     self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["fog"])
 
@@ -304,6 +322,44 @@ class LabirynthGame:
             elif cell != 1:
                 self.player_x, self.player_y = new_x, new_y
 
+        self.player_moves += 1
+        if self.player_moves % 3 == 0:
+            self.monster_turns_left = 2
+            self.grass_monsters = set(self.enemies)
+            for (x, y) in self.enemies:
+                self.labirynth[y][x] = "GRASS_MONSTER"
+        elif self.monster_turns_left > 0:
+            self.monster_turns_left -= 1
+            if self.monster_turns_left == 0:
+                for (x, y) in self.enemies:
+                    self.labirynth[y][x] = "GRASS"
+                self.grass_monsters.clear()
+
+        # Monster visibility logic
+        if not hasattr(self, "monsters_are_visible"):
+            self.monsters_are_visible = False
+            self.monster_hidden_turns = random.randint(3, 5)
+            self.monster_visible_turns = random.randint(1, 2)
+
+        if self.monsters_are_visible:
+            self.monster_visible_turns -= 1
+            if self.monster_visible_turns <= 0:
+                # Hide monsters
+                for (x, y) in self.enemies:
+                    self.labirynth[y][x] = "GRASS"
+                self.grass_monsters.clear()
+                self.monsters_are_visible = False
+                self.monster_hidden_turns = random.randint(3, 5)
+        else:
+            self.monster_hidden_turns -= 1
+            if self.monster_hidden_turns <= 0:
+                # Show monsters
+                self.grass_monsters = set(self.enemies)
+                for (x, y) in self.enemies:
+                    self.labirynth[y][x] = "GRASS_MONSTER"
+                self.monsters_are_visible = True
+                self.monster_visible_turns = random.randint(1, 2)
+
         self.draw_labirynth()
 
         # Check for key collection
@@ -341,6 +397,7 @@ class LabirynthGame:
         if (self.player_x, self.player_y) == (self.exit_x, self.exit_y):
             self.is_game_active = False
             final_time = int(time.time() - self.start_time)
+            self.points += self.hearts * 250
             messagebox.showinfo("Congratulations!", f"You've reached the exit in {final_time}s \n Your score: {self.points}")
             self.root.quit()
 
@@ -365,6 +422,15 @@ class LabirynthGame:
             self.label_points.config(text=f"Punkty: {self.points}")
             print("You found a Gate Key!")
             self.draw_labirynth()
+
+        if (self.player_x, self.player_y) in self.grass_monsters:
+            self.hearts -= 1
+            self.label_hearts.config(text=f"Hearts: {self.hearts}")
+            print("You were hit by a monster! Lost 1 heart.")
+            if self.hearts <= 0:
+                self.is_game_active = False
+                messagebox.showinfo("Game Over", "You lost all your hearts!")
+                self.root.quit()
                    
     def create_key_door(self): # tworzenie klucza i drzwi
         reachable_paths = self.find_reachable_paths(self.player_x, self.player_y)
@@ -561,6 +627,28 @@ class LabirynthGame:
             (self.player_x+1)*cell_size, (self.player_y+1)*cell_size,
             fill="red", outline=""
         )
+
+    def place_enemies(self):
+        possible = [
+            (x, y)
+            for y in range(self.height)
+            for x in range(self.width)
+            if self.labirynth[y][x] == 0
+            and (x, y) != (self.player_x, self.player_y)
+            and (x, y) != (self.exit_x, self.exit_y)
+            and (x, y) != (self.torch_x, self.torch_y)
+            and (x, y) != (self.gate_x, self.gate_y)
+            and (x, y) != (self.gate_key_x, self.gate_key_y)
+            and not any((abs(x-ex) <= 1 and abs(y-ey) <= 1) for (ex, ey) in self.enemies)
+        ]
+        random.shuffle(possible)
+        for _ in range(self.enemies_number):
+            for idx, (x, y) in enumerate(possible):
+                if all(abs(x-ex) > 1 or abs(y-ey) > 1 for (ex, ey) in self.enemies):
+                    self.enemies.append((x, y))
+                    self.labirynth[y][x] = "GRASS"
+                    possible.pop(idx)
+                    break
 
     @staticmethod
     def start_game_with_difficulty(root, difficulty): # uruchomienie gry z wybranym poziomem trudności

@@ -10,8 +10,8 @@ class LabirynthGame:
         "easy": {
             "width": 30,
             "height": 15,
-            "doors": 1,
-            "max_keys": 1,
+            "doors": 0,
+            "max_keys": 0,
             "hearts": 5,
             "enemies": 0,
             "vision_range": 2
@@ -23,7 +23,7 @@ class LabirynthGame:
             "max_keys": 2,
             "hearts": 5,
             "enemies": 10,
-            "vision_range": 2
+            "vision_range": 20
         },
         "hard": {
             "width": 50,
@@ -48,12 +48,12 @@ class LabirynthGame:
         self.vision_range = self.DIFFICULTY_SETTINGS[difficulty]["vision_range"]
         self.max_keys = self.DIFFICULTY_SETTINGS[difficulty]["max_keys"]
         self.hearts = self.DIFFICULTY_SETTINGS[difficulty]["hearts"]
-        self.enemies = self.DIFFICULTY_SETTINGS[difficulty]["enemies"]
+        self.enemies_number = self.DIFFICULTY_SETTINGS[difficulty]["enemies"]
 
         self.inventory = {
             "keys": [],
             "special_items": [],
-            "Golden Key": 0
+            "Gate Key": 0
         }
 
         self.points = 5000
@@ -92,10 +92,17 @@ class LabirynthGame:
         self.previous_x, self.previous_y = self.player_x, self.player_y
         self.exit_x, self.exit_y = self.random_exit()
         self.labirynth[self.exit_y][self.exit_x] = "E"
+        self.place_gate()
+        self.place_gate_key()
         self.create_key_door()
         self.labirynth[self.key_y][self.key_x] = "K"
         self.labirynth[self.door_y][self.door_x] = "D"
         self.labirynth[self.torch_x][self.torch_y] = "T"
+
+        self.doors = []
+        self.keys_pos = []
+        self.keys = []
+        self.create_doors_and_keys(self.DIFFICULTY_SETTINGS[difficulty]["doors"])
 
         self.place_torch()
 
@@ -110,12 +117,20 @@ class LabirynthGame:
             "path": tk.PhotoImage(file="grafika/forest/path.png"),
             "player": tk.PhotoImage(file="grafika/knight.png"),
             "exit": tk.PhotoImage(file="grafika/exit.png"),
-            "key": tk.PhotoImage(file="grafika/ruby_key.png"),
-            "door": tk.PhotoImage(file="grafika/ruby_door.png"),
+            "ruby_key": tk.PhotoImage(file="grafika/ruby_key.png"),
+            "ruby_door": tk.PhotoImage(file="grafika/ruby_door.png"),
             "fog": tk.PhotoImage(file="grafika/forest/fog.png"),
             "torch": tk.PhotoImage(file="grafika/forest/torch.png"),
             "gate": tk.PhotoImage(file="grafika/forest/gate.png"),
-            "gate_key": tk.PhotoImage(file="grafika/forest/gate_key.png")
+            "gate_key": tk.PhotoImage(file="grafika/forest/gate_key.png"),
+            "amber_key": tk.PhotoImage(file="grafika/amber_key.png"),
+            "amber_door": tk.PhotoImage(file="grafika/amber_door.png"),
+            "amethyst_key": tk.PhotoImage(file="grafika/amethyst_key.png"),
+            "amethyst_door": tk.PhotoImage(file="grafika/amethyst_door.png"),
+            "emerald_key": tk.PhotoImage(file="grafika/emerald_key.png"),
+            "emerald_door": tk.PhotoImage(file="grafika/emerald_door.png"),
+            "sapphire_key": tk.PhotoImage(file="grafika/sapphire_key.png"),
+            "sapphire_door": tk.PhotoImage(file="grafika/sapphire_door.png"),
         }
         return textures
 
@@ -200,16 +215,39 @@ class LabirynthGame:
         for y in range(self.height):
             for x in range(self.width):
                 if ((x - self.player_x) ** 2 + (y - self.player_y) ** 2) <= self.vision_range ** 2:
+                    cell = self.labirynth[y][x]
                     if (x, y) == (self.exit_x, self.exit_y):
                         self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["exit"])
                     elif (x, y) == (self.player_x, self.player_y):
                         self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["player"])
-                    elif (x, y) == (self.key_x, self.key_y) and self.labirynth[y][x] == "K":
-                        self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["key"])
-                    elif (x, y) == (self.door_x, self.door_y) and self.door_active:
-                        self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["door"])
+                    elif isinstance(cell, str) and cell.startswith("K"):
+                        # Draw key based on its type
+                        key_textures = {
+                            "K1": "ruby_key",
+                            "K2": "amber_key",
+                            "K3": "amethyst_key",
+                            "K4": "emerald_key",
+                            "K5": "sapphire_key"
+                        }
+                        texture = self.textures.get(key_textures.get(cell, "ruby_key"))
+                        self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=texture)
+                    elif isinstance(cell, str) and cell.startswith("D"):
+                        # Draw door based on its type
+                        door_textures = {
+                            "D1": "ruby_door",
+                            "D2": "amber_door",
+                            "D3": "amethyst_door",
+                            "D4": "emerald_door",
+                            "D5": "sapphire_door"
+                        }
+                        texture = self.textures.get(door_textures.get(cell, "ruby_door"))
+                        self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=texture)
                     elif (x, y) == (self.torch_x, self.torch_y):
                         self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["torch"])
+                    elif (x, y) == (self.gate_x, self.gate_y) and self.labirynth[y][x] == "G":
+                        self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["gate"])
+                    elif (x, y) == (self.gate_key_x, self.gate_key_y) and self.labirynth[y][x] == "GK":
+                        self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["gate_key"])
                 else:
                     self.canvas.create_image(x * self.cell_size, y * self.cell_size, anchor=tk.NW, image=self.textures["fog"])
 
@@ -217,39 +255,45 @@ class LabirynthGame:
         new_x, new_y = self.player_x, self.player_y
         previous_x, previous_y = self.player_x, self.player_y
 
-        if event.keysym in ("w", "Up"):
+        if event.keysym in ("w", "Up", "W"):
             new_y -= 1
-        elif event.keysym in ("s", "Down"):
+        elif event.keysym in ("s", "Down", "S"):
             new_y += 1
-        elif event.keysym in ("a", "Left"):
+        elif event.keysym in ("a", "Left", "A"):
             new_x -= 1
-        elif event.keysym in ("d", "Right"):
+        elif event.keysym in ("d", "Right", "D"):
             new_x += 1
 
         if 0 <= new_x < self.width and 0 <= new_y < self.height: #blokada ścian
-            if self.labirynth[new_y][new_x] != 1:
+            cell = self.labirynth[new_y][new_x]
+            # Check for door
+            if isinstance(cell, str) and cell.startswith("D"):
+                key_type = "K" + cell[1:]  # e.g. D2 -> K2
+                if key_type in self.keys:
+                    # Open the door
+                    self.labirynth[new_y][new_x] = 0
+                    self.keys.remove(key_type)
+                    self.points += 200
+                    self.label_points.config(text=f"Punkty: {self.points}")
+                    print(f"You opened door {cell}!")
+                    self.player_x, self.player_y = new_x, new_y
+                else:
+                    print(f"You need key {key_type} to open this door!")
+                    # Don't move
+            elif cell != 1:
                 self.player_x, self.player_y = new_x, new_y
-                self.draw_labirynth()
 
+        self.draw_labirynth()
 
-        if (self.player_x, self.player_y) == (self.key_x, self.key_y): #zbieranie klucza
-            self.keys.append("K")
-            self.labirynth[self.key_y][self.key_x] = 0
-            self.key_x, self.key_y = -1, -1 
-            print("You found a key!")
-        
-        if (self.player_x, self.player_y) == (self.door_x, self.door_y) and self.door_active: #otwieranie drzwi
-            if "K" in self.keys:
-                self.door_active = False
-                self.labirynth[self.door_y][self.door_x] = 0
-                self.keys.remove("K")
-                self.points += 200
-                self.label_points.config(text=f"Punkty: {self.points}")
-                print("You opened the door!")
-            else:
-                print("You need a key to open this door!")
-                self.player_x, self.player_y = previous_x, previous_y
-        
+        # Check for key collection
+        cell = self.labirynth[self.player_y][self.player_x]
+        if isinstance(cell, str) and cell.startswith("K"):
+            if cell not in self.keys:
+                self.keys.append(cell)
+                self.labirynth[self.player_y][self.player_x] = 0
+                print(f"You found key {cell}!")
+
+        # Torch collection
         if (self.player_x, self.player_y) == (self.torch_x, self.torch_y):
             self.labirynth[self.torch_y][self.torch_x] = 0
             self.torch_x, self.torch_y = -1, -1
@@ -260,11 +304,34 @@ class LabirynthGame:
             self.inventory["special_items"].append("torch")
             self.draw_labirynth()
 
-        if (self.player_x, self.player_y) == (self.exit_x, self.exit_y): # wyjście z labiryntu
+        # Exit
+        if (self.player_x, self.player_y) == (self.exit_x, self.exit_y):
             self.is_game_active = False
             final_time = int(time.time() - self.start_time)
             messagebox.showinfo("Congratulations!", f"You've reached the exit in {final_time}s \n Your score: {self.points}")
             self.root.quit()
+
+        # Gate logic (unchanged)
+        if (self.player_x, self.player_y) == (self.gate_x, self.gate_y):
+            if self.inventory["Gate Key"] == 1:
+                self.labirynth[self.gate_y][self.gate_x] = 0
+                self.gate_x, self.gate_y = -1, -1
+                self.points += 500
+                self.label_points.config(text=f"Punkty: {self.points}")
+                print("You opened the gate!")
+                self.draw_labirynth()
+            else:
+                print("You need a Gate Key to open this gate!")
+                self.player_x, self.player_y = previous_x, previous_y
+
+        if (self.player_x, self.player_y) == (self.gate_key_x, self.gate_key_y):
+            self.labirynth[self.gate_key_y][self.gate_key_x] = 0
+            self.gate_key_x, self.gate_key_y = -1, -1
+            self.inventory["Gate Key"] += 1
+            self.points += 300
+            self.label_points.config(text=f"Punkty: {self.points}")
+            print("You found a Gate Key!")
+            self.draw_labirynth()
                    
     def create_key_door(self): # tworzenie klucza i drzwi
         reachable_paths = self.find_reachable_paths(self.player_x, self.player_y)
@@ -309,6 +376,41 @@ class LabirynthGame:
                 and (x, y) not in path_to_key
             ])
             self.labirynth[self.door_y][self.door_x] = "D"
+
+    def create_doors_and_keys(self, num_doors): # tworzenie wielu drzwi i kluczy
+        for i in range(num_doors):
+            reachable_paths = self.find_reachable_paths(self.player_x, self.player_y)
+            # Place key
+            key_pos = random.choice([
+                (x, y) for x, y in reachable_paths
+                if (x, y) != (self.player_x, self.player_y) and (x, y) != (self.exit_x, self.exit_y)
+                and (x, y) not in self.keys_pos and (x, y) not in self.doors
+            ])
+            self.keys_pos.append(key_pos)
+            self.labirynth[key_pos[1]][key_pos[0]] = f"K{i+1}"
+
+            # Find path from player to key and key to exit
+            path_to_key = self.find_path(self.player_x, self.player_y, key_pos[0], key_pos[1])
+            path_key_to_exit = self.find_path(key_pos[0], key_pos[1], self.exit_x, self.exit_y)
+
+            # Place door only on path from key to exit, not blocking player to key
+            possible_door_positions = [
+                pos for pos in path_key_to_exit[1:-1]
+                if pos not in path_to_key and pos not in self.doors and pos not in self.keys_pos
+            ]
+            if possible_door_positions:
+                door_pos = random.choice(possible_door_positions)
+            else:
+                door_pos = random.choice([
+                    (x, y) for (x, y) in reachable_paths
+                    if (x, y) != (self.player_x, self.player_y)
+                    and (x, y) != (self.exit_x, self.exit_y)
+                    and (x, y) not in self.keys_pos
+                    and (x, y) not in self.doors
+                    and (x, y) not in path_to_key
+                ])
+            self.doors.append(door_pos)
+            self.labirynth[door_pos[1]][door_pos[0]] = f"D{i+1}"
     
     def place_torch(self): # umieszczanie położenia pochodni
         possible = [
@@ -365,6 +467,37 @@ class LabirynthGame:
                     queue.append((nx, ny, path + [(x, y)]))
         
         return []
+
+    def place_gate(self): # umieszczanie bramy
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+        random.shuffle(directions)
+        for dx, dy in directions:
+            gx, gy = self.exit_x + dx, self.exit_y + dy
+            if 0 <= gx < self.width and 0 <= gy < self.height and self.labirynth[gy][gx] == 0:
+                self.labirynth[gy][gx] = "G"
+                self.gate_x, self.gate_y = gx, gy
+                return
+        self.gate_x, self.gate_y = -1, -1
+
+    def place_gate_key(self): # umieszczanie klucza do bramy
+        visited = [[False]*self.width for _ in range(self.height)]
+        queue = deque([(self.gate_x, self.gate_y, 0)])
+        visited[self.gate_y][self.gate_x] = True
+        far_cells = []
+        while queue:
+            x, y, dist = queue.popleft()
+            if dist >= 30 and self.labirynth[y][x] == 0:
+                far_cells.append((x, y))
+            for dx, dy in [(-1,0), (1,0), (0,-1), (0,1)]:
+                nx, ny = x+dx, y+dy
+                if 0 <= nx < self.width and 0 <= ny < self.height and not visited[ny][nx] and self.labirynth[ny][nx] == 0:
+                    visited[ny][nx] = True
+                    queue.append((nx, ny, dist+1))
+        if far_cells:
+            self.gate_key_x, self.gate_key_y = random.choice(far_cells)
+            self.labirynth[self.gate_key_y][self.gate_key_x] = "GK"
+        else:
+            self.gate_key_x, self.gate_key_y = -1, -1
 
     @staticmethod
     def start_game_with_difficulty(root, difficulty): # uruchomienie gry z wybranym poziomem trudności

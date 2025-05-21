@@ -50,19 +50,23 @@ KAMPANIA:
 		-> pochodnia
 		-> przeciwnicy(co kilka tur wyskakuje na jednym miejscu)
 	-> pustynia labirynt:
-		-> burza piaskowa (zmiania wyglądu labiryntu) EASY
-		-> ruchome piaski MEDIUM
+		-> burza piaskowa (zmiania układu labiryntu co 3 ruchy, gracz zawsze stoi na ścieże, zawsze ma możliwość dodarcia do mety) EASY
+		-> ruchome piaski (poruszanie sie po jednym polu zajmuje 2 tury) MEDIUM
 		-> sępy (przciwnicy AI z określoną szybkością i polem widzenia) MEDIUM
-		-> system dnia i nocy (w nocy ograniczona widoczność gracza i wrogów) MEDIUM
+		-> system dnia i nocy (w nocy ograniczona widoczność gracza i wrogów) MEDIUM (day: 0.75 / night: 0.5) HARD (day/night: 0.5)
 			-> HARD - większa liczba przeciwników / zwiekszenie ich statystyk
+		-> przedmioty specjalne: pochodnia / buty (ruchome piaski działają jak zwykłe ścieżki)
 	-> góry:
-		-> wielopoziomowość (wzgórza) EASY
+		-> wielopoziomowość (np. schody, dookoła skała - można się tylko zsunąć "w dół") EASY
 		-> lawiny (co kilka tur na losowo wybrane (1 raz) pola spada lawina) MEDIUM
 		-> erupcje wulkanu (co kilka tur na losowe pola spada meteor (2x2)) HARD
 		-> zapadające skały(po zejściu z pola pole sie zapada) HARD
+		-> przedmiot specjalny: lotnia (w miejscach, gdzie wcześniej zapadła się półka można się poruszać + brak obrażeń z upadku z wysokości)
 	-> wieża:
 		-> zapadająca się podłoga EASY
+		-> ciemność (widoczność: 2)
 		-> wrogowie (przeciwnicy AI) MEDIUM
 		-> drwzi i klucze EASY
 		-> przyciski EASY
 		-> tajne przejścia w dwie/jedną strone HARD
+		-> przedmiot specjalny: pochodnia / latarnia (zwiększa pole widzenia o 5)

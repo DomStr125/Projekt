@@ -338,8 +338,8 @@ class LabirynthGame:
         # Monster visibility logic
         if not hasattr(self, "monsters_are_visible"):
             self.monsters_are_visible = False
-            self.monster_hidden_turns = random.randint(3, 5)
-            self.monster_visible_turns = random.randint(1, 2)
+            self.monster_hidden_turns = 3
+            self.monster_visible_turns = 2
 
         if self.monsters_are_visible:
             self.monster_visible_turns -= 1
@@ -349,7 +349,7 @@ class LabirynthGame:
                     self.labirynth[y][x] = "GRASS"
                 self.grass_monsters.clear()
                 self.monsters_are_visible = False
-                self.monster_hidden_turns = random.randint(3, 5)
+                self.monster_hidden_turns = 3
         else:
             self.monster_hidden_turns -= 1
             if self.monster_hidden_turns <= 0:
@@ -358,7 +358,7 @@ class LabirynthGame:
                 for (x, y) in self.enemies:
                     self.labirynth[y][x] = "GRASS_MONSTER"
                 self.monsters_are_visible = True
-                self.monster_visible_turns = random.randint(1, 2)
+                self.monster_visible_turns = 2
 
         self.draw_labirynth()
 

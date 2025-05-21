@@ -52,10 +52,11 @@ class LabirynthGame:
 
         self.inventory = {
             "keys": [],
-            "special_items": []
+            "special_items": [],
+            "Golden Key": 0
         }
 
-        self.points = 0
+        self.points = 5000
         self.start_time = time.time()
         self.game_time = 0
         self.is_game_active = True
@@ -120,7 +121,7 @@ class LabirynthGame:
     def setup_scores(self): # aktualizacja punktów i czasu         
             if self.is_game_active:
                 self.game_time = int(time.time() - self.start_time)
-                self.points = max(0, 10000 - self.game_time * 10)
+                self.points = max(0, 5000 - self.game_time * 10)
 
                 self.label_points.config(text=f"Punkty: {self.points}")
                 self.label_time.config(text=f"Czas: {self.game_time}s")
@@ -267,7 +268,7 @@ class LabirynthGame:
     def create_key_door(self): # tworzenie klucza i drzwi
         reachable_paths = self.find_reachable_paths(self.player_x, self.player_y)
 
-        # tworzenie klucza
+        # położenie klucza
         self.key_x, self.key_y = random.choice([
             (x, y) for x, y in reachable_paths
             if (x, y) != (self.player_x, self.player_y) and (x, y) != (self.exit_x, self.exit_y)

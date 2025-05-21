@@ -23,7 +23,7 @@ class LabirynthGame:
             "max_keys": 2,
             "hearts": 5,
             "enemies": 10,
-            "vision_range": 20
+            "vision_range": 2
         },
         "hard": {
             "width": 50,
@@ -289,9 +289,21 @@ class LabirynthGame:
         cell = self.labirynth[self.player_y][self.player_x]
         if isinstance(cell, str) and cell.startswith("K"):
             if cell not in self.keys:
+                if len(self.keys) >= self.max_keys and self.max_keys > 0:
+                    removed_key = self.keys.pop(0)
+                    # Place the removed key at the current position
+                    self.labirynth[self.player_y][self.player_x] = removed_key
+                    print(f"Inventory full! Dropped oldest key: {removed_key} and picked up {cell}")
+                elif self.max_keys == 0:
+                    print("You cannot carry any keys on this difficulty!")
+                    return
+                else:
+                    self.labirynth[self.player_y][self.player_x] = 0
+                    print(f"You found key {cell}!")
                 self.keys.append(cell)
-                self.labirynth[self.player_y][self.player_x] = 0
-                print(f"You found key {cell}!")
+                # Only clear the cell if we didn't just drop a key there
+                if self.labirynth[self.player_y][self.player_x] == cell:
+                    self.labirynth[self.player_y][self.player_x] = 0
 
         # Torch collection
         if (self.player_x, self.player_y) == (self.torch_x, self.torch_y):
